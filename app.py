@@ -257,7 +257,8 @@ demo = gr.Interface(
     inputs="text",
     outputs="text",
     title="RAG-demo-v1",
-    description="Ask a question about business analysis.",
+    description="""Ask a question about Erste Group\nFor source:<a href='https://github.com/DanielSzakacs/RAG-demo-v1/blob/main/source/Erste_group.pdf'> click here</a>\n
+    Jupyter notebook: <a href='https://github.com/DanielSzakacs/RAG-demo-v1/blob/main/rag_pet_project.ipynb'>click here</a>""",
     examples=[]
 )
 
