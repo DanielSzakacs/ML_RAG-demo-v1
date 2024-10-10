@@ -55,7 +55,7 @@ def download_pdf(filename:str,
 
 filename = "businessAnalysis.pdf"
 dir_path="./pdf_source/"
-pdf_url = "https://raw.githubusercontent.com/DanielSzakacs/RAG-demo-v1/main/rag_resource/cinderella_story.pdf"
+pdf_url = "https://raw.githubusercontent.com/DanielSzakacs/RAG-demo-v1/main/source/Erste_group.pdf"
 full_pdf_path = dir_path + filename
 
 download_pdf(filename=filename,
