@@ -257,9 +257,10 @@ demo = gr.Interface(
     inputs="text",
     outputs="text",
     title="RAG-demo-v1",
-    description="""Ask a question about Erste Group\nFor source:<a href='https://github.com/DanielSzakacs/RAG-demo-v1/blob/main/source/Erste_group.pdf'> click here</a>\n
+    description="""Before asking Please check the source folder, (for memory saving reason it only contains few page of pdf)<br><br>
+    For source:<a href='https://github.com/DanielSzakacs/RAG-demo-v1/blob/main/source/Erste_group.pdf'> click here</a><br>
     Jupyter notebook: <a href='https://github.com/DanielSzakacs/RAG-demo-v1/blob/main/rag_pet_project.ipynb'>click here</a>""",
-    examples=[]
+    examples=["Huw much is the operating income from 2020 to 2022 ?", "How Erste Groupe reacter for the COVID ? "]
 )
 
 # Launch the Gradio interface
