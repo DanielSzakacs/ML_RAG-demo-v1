@@ -1,0 +1,30 @@
+# PDF handling
+PyMuPDF==1.24.11  # Replace with your required version
+sentence-transformers==3.1.1
+
+# NLP libraries
+spacy==3.7.5  # Ensure compatibility with 
+pydantic==2.9.2  # Required for spacy compatibility
+
+# Data handling and utilities
+tqdm==4.66.1
+pandas==2.0.3
+numpy==1.24.3
+
+# Transformers and Hugging Face tools
+huggingface_hub==0.24.7
+transformers==4.44.2
+
+# Visualization
+matplotlib==3.7.2
+
+# Interface
+gradio==3.40.1
+
+# PyTorch
+torch==2.0.1
+
+accelerate==0.34.2
+
+--extra-index-url https://download.pytorch.org/whl/cu113
+torch
