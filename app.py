@@ -55,7 +55,7 @@ def download_pdf(filename:str,
 
 filename = "businessAnalysis.pdf"
 dir_path="./pdf_source/"
-pdf_url = "https://raw.githubusercontent.com/DanielSzakacs/RAG-demo-v1/main/source/Erste_group.pdf"
+pdf_url = "https://raw.githubusercontent.com/DanielSzakacs/RAG-demo-v1/main/source/businessAnalysis.pdf"
 full_pdf_path = dir_path + filename
 
 download_pdf(filename=filename,
@@ -108,6 +108,7 @@ def split_list(input_list: list,
                slice_size: int) -> list[list[str]]:
                 """
                 Splits the input_list into sublists of size slice_size (or as close as possible).
+
                 For example, a list of 17 sentences would be split into two lists of [[10], [7]]
                 """
                 return [input_list[i:i + slice_size] for i in range(0, len(input_list), slice_size)]
@@ -157,18 +158,6 @@ pages_and_chunks = text_chunks_and_embedding_df.to_dict(orient="records")
 # Convert embedding to torch tensor and send to device
 embeddings = torch.tensor(np.array(text_chunks_and_embedding_df["embedding"].tolist()), dtype=torch.float32).to(device)
 
-huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
-model_name = "google/gemma-7b-it"
-
-login(token=huggingface_token)
-
-# Set up a text generation pipeline using a hosted model
-generator = pipeline(
-    "text-generation",
-    model=model_name,
-    device=device
-)
-
 def get_most_relavent_resources(query:str,
                                 embeddings: torch.tensor,
                                 model: SentenceTransformer=embedding_model,
@@ -184,6 +173,20 @@ def get_most_relavent_resources(query:str,
     scores, indices = torch.topk(input=dot_scores,
                                  k=n_resources_to_return)
     return scores, indices
+
+
+huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
+model_name = "google/gemma-7b-it"
+print(f"Morel name : {model_name}")
+
+login(token=huggingface_token)
+# Set up a text generation pipeline using a hosted model
+generator = pipeline(
+    "text-generation",
+    model=model_name,
+    device=device
+)
+
 
 # Create a tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -228,7 +231,7 @@ def extract_answer_from_generated_text(generated_text:str)->str:
   answer_part = answer_part.replace("<end_of_turn>", "").replace("<start_of_turn>model\nSure, here's the answer to the user's query:", "").replace("<start_of_turn>model", "").strip()
   return answer_part
 
-def ask(query, return_answer_only=True):
+def ask(query, n_resources_to_return=5, return_answer_only=True):
     # Get the relevant context items (as in your previous implementation)
     scores, indices = get_most_relavent_resources(query=query, embeddings=embeddings)
     context_items = [pages_and_chunks[i] for i in indices]
@@ -244,23 +247,44 @@ def ask(query, return_answer_only=True):
 
     if return_answer_only:
         return output_text.strip()
-    return output_text
+    return output_text, context_items
+
+
+def show_relavent_page(context):
+  page_number = context[0]["page_number"]
+  # Open the pdf with fitz
+  doc = fitz.open(full_pdf_path)
+  page = doc.load_page(page_number - 1)
+
+  # Get the image of the page
+  img = page.get_pixmap(dpi=300)
+
+  # Convert the Pixmap to a numpy array
+  img_array = np.frombuffer(img.samples_mv,
+                            dtype=np.uint8).reshape((img.h, img.w, img.n))
+
+  return img_array
 
 
 # Create a function to be called by the Gradio interface
 def gradio_ask(query):
-    answer = ask(query=query, return_answer_only=False)
-    return answer
+    # Call the ask function with the query and return the result
+    answer, context_items = ask(query=query,
+                                return_answer_only=False)
+    image_array = show_relavent_page(context_items)
+    return answer, image_array
+
 
 demo = gr.Interface(
     fn=gradio_ask,
     inputs="text",
-    outputs="text",
+    outputs=["text", "image"],
     title="RAG-demo-v1",
-    description="""Before asking Please check the source folder, (for memory saving reason it only contains few page of pdf)<br><br>
-    For source:<a href='https://github.com/DanielSzakacs/RAG-demo-v1/blob/main/source/Erste_group.pdf'> click here</a><br>
+    description="""Before asking Please check the source folder. Topic : Business Analysis<br><br>
+    For source: <a href='https://github.com/DanielSzakacs/RAG-demo-v1/blob/main/source/businessAnalysis.pdf'>click here</a><br>
+    Download source: <a href='https://raw.githubusercontent.com/DanielSzakacs/RAG-demo-v1/main/source/businessAnalysis.pdf'>click here</a><br>
     Jupyter notebook: <a href='https://github.com/DanielSzakacs/RAG-demo-v1/blob/main/rag_pet_project.ipynb'>click here</a>""",
-    examples=["Huw much is the operating income from 2020 to 2022 ?", "How Erste Groupe reacter for the COVID ? "]
+    examples=["What is the Porter’s value chain?", "What is the range of business analysis ?"]
 )
 
 # Launch the Gradio interface
